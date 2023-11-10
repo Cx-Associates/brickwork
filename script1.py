@@ -9,7 +9,11 @@ g = Graph(load_brick=True)
 g.load_file('models/msl.ttl')
 model = BrickModel(g)
 
-# get chiller
-chiller = model.get_entities(brick_class='Chiller')
+# get chiller. I know there's only one chiller so I ask for the first result of the list.
+chiller = model.get_entities(brick_class='Chiller')[0]
 
+# get pumps
+list_pumps = model.get_entities(brick_class='Pump')
+
+pass
 # get timeseriesID of chiller power meter
