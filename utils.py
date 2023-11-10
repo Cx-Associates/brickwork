@@ -2,8 +2,25 @@
 
 """
 
+class RDF():
+    """
 
-class Entity():
+    """
+    def __init__(self, graph):
+        self.g = graph
+
+    def unpack(self, result):
+        """
+
+        :param result:
+        :return:
+        """
+        list_ = result.bindings
+        list_friendly = [Entity(x.get('sub'), self.g) for x in list_]
+        return list_friendly
+
+
+class Entity(RDF):
     """
 
     """
@@ -13,7 +30,7 @@ class Entity():
         self.name = name
         self.g = g
 
-    def get_timeseries(self, relationship, inverse_relationship=None):
+    def get_all_relationships(self):
         """
 
         :return:
@@ -24,12 +41,23 @@ class Entity():
                      }}
             """ % self.uri_ref
         )
-        list_ = res.bindings
+        return self.unpack(res)
 
-        return list_ #ToDo: proof of concept is good ... maybe move this method to something else for the future and
-        # then get back to fetching the timeseries
+    def get_timeseries(self, relationship, inverse_relationship=None):
+        """
 
-class BrickModel():
+        :return:
+        """
+        res = self.g.query(
+            f"""SELECT ?predicate ?object WHERE {{
+                <%s> ?brick.{relationship} ?object .
+                    }}
+            """ % self.uri_ref
+        )
+        return self.unpack(res)
+
+
+class BrickModel(RDF):
     """
 
     """
@@ -38,12 +66,14 @@ class BrickModel():
         self.time_frame = (None, None)
 
     def get_entities(self, brick_class=None):
+        """
+
+        :param brick_class:
+        :return: a list of instances of the Entity class
+        """
         res = self.g.query(
             f"""SELECT * WHERE {{
                 ?sub a brick:{brick_class} 
                      }}"""
         )
-        list_ = res.bindings
-        list_friendly = [Entity(x.get('sub'), self.g) for x in list_]
-
-        return list_friendly
+        return self.unpack(res)

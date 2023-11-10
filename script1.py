@@ -14,7 +14,8 @@ model.time_frame = ('start', 'end')
 chiller = model.get_entities(brick_class='Chiller')[0]
 
 # get chiller power meter timeseries
-ts_power_chiller = chiller.get_timeseries(chiller, 'isMeteredBy')
+chiller_preds = chiller.get_all_relationships()
+ts_power_chiller = chiller.get_timeseries('isMeteredBy')
 
 # get pumps
 list_pumps = model.get_entities(brick_class='Pump')
