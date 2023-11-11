@@ -9,14 +9,14 @@ class RDF():
     def __init__(self, graph):
         self.g = graph
 
-    def unpack(self, result):
+    def unpack(self, result, element='subject'):
         """
 
         :param result:
         :return:
         """
         list_ = result.bindings
-        list_friendly = [Entity(x.get('sub'), self.g) for x in list_]
+        list_friendly = [Entity(x.get(element), self.g) for x in list_]
         return list_friendly
 
 
@@ -26,7 +26,10 @@ class Entity(RDF):
     """
     def __init__(self, uri_ref, g):
         self.uri_ref = uri_ref
-        name = str(uri_ref).split('#')[1]
+        try:
+            name = str(uri_ref).split('#')[1]
+        except IndexError:
+            name = uri_ref
         self.name = name
         self.g = g
 
@@ -41,7 +44,7 @@ class Entity(RDF):
                      }}
             """ % self.uri_ref
         )
-        return self.unpack(res)
+        return res.bindings
 
     def get_timeseries(self, relationship, inverse_relationship=None):
         """
@@ -50,11 +53,31 @@ class Entity(RDF):
         """
         res = self.g.query(
             f"""SELECT ?predicate ?object WHERE {{
-                <%s> ?brick.{relationship} ?object .
+                <%s> brick:{relationship} ?object .
                     }}
             """ % self.uri_ref
         )
-        return self.unpack(res)
+        # now get the external timeseries reference of the result of the previous query
+        entity = self.unpack(res, 'object')[0] #ToDo: not safe. prepare to deal with multiple results
+        res2 = self.g.query(
+            f"""SELECT ?object WHERE {{
+            <%s> ref:hasExternalReference ?object .
+                }}
+        """ % entity.uri_ref
+        )
+        entity2 = self.unpack(res2, 'object')[0]
+        res3 = self.g.query(
+            # f"""SELECT ?timeseriesId WHERE {{
+            # <%s> ref:hasTimeseriesId ?timeseriesId .
+            # }}
+            """SELECT ?propertyValue WHERE {
+            <%s> ?property ?propertyValue .
+            }
+        """ % entity2.uri_ref
+        )
+
+        return res3
+
 
 
 class BrickModel(RDF):
@@ -73,7 +96,7 @@ class BrickModel(RDF):
         """
         res = self.g.query(
             f"""SELECT * WHERE {{
-                ?sub a brick:{brick_class} 
+                ?subject a brick:{brick_class} 
                      }}"""
         )
         return self.unpack(res)
