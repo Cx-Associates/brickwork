@@ -7,7 +7,7 @@
 #Chilled water system
 bldg:database   a   ref:Database ;
     rdfs:label  "ACE IoT Cloud Database" ;
-    bldg:connstring "cxa/cxa_main_st_landing/" ;
+    bldg:connstring "https://manager.aceiot.cloud/api/points/cxa/cxa_main_st_landing/" ;
 .
 
 # Chiller and sensors

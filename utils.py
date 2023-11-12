@@ -1,8 +1,9 @@
 """" classes and functions
 
 """
+from api import get_timeseries
 
-class RDF():
+class RdfParser():
     """
 
     """
@@ -20,7 +21,35 @@ class RDF():
         return list_friendly
 
 
-class Entity(RDF):
+class BrickModel(RdfParser):
+    """
+
+    """
+    def __init__(self, _graph=None):
+        self.g = _graph
+        self.time_frame = (None, None)
+
+    def set_time_frame(self, tuple):
+        self.time_frame = tuple
+
+    def get_entities(self, brick_class=None):
+        """
+
+        :param brick_class:
+        :return: a list of instances of the Entity class
+        """
+        res = self.g.query(
+            f"""SELECT * WHERE {{
+                ?subject a brick:{brick_class} 
+                     }}"""
+        )
+        list_ = self.unpack(res)
+        for entity in list_:
+            entity.model = self
+
+        return list_
+
+class Entity(RdfParser):
     """
 
     """
@@ -32,6 +61,7 @@ class Entity(RDF):
             name = str(uri_ref)
         self.name = name
         self.g = g
+        self.model = None
 
     def get_all_relationships(self):
         """
@@ -72,40 +102,22 @@ class Entity(RDF):
 
         return entity2
 
-    def get_timeseries(self, relationship):
+    def get_timeseries(self, relationship): #change from relationship to brick:type of object
         """
 
         :param relationship:
         :return:
         """
         ts_id = self.get_timeseries_id(relationship)
-        connstr = self.g.query(
-            """SELECT ?str WHERE { bldg:database bldg:connstring } ?str"""
-        )
-        fullstr = connstr + ts_id.name
-
-        #Todo: now do full API call.
-
-
-
-
-class BrickModel(RDF):
-    """
-
-    """
-    def __init__(self, _graph=None):
-        self.g = _graph
-        self.time_frame = (None, None)
-
-    def get_entities(self, brick_class=None):
-        """
-
-        :param brick_class:
-        :return: a list of instances of the Entity class
-        """
         res = self.g.query(
-            f"""SELECT * WHERE {{
-                ?subject a brick:{brick_class} 
-                     }}"""
+            """SELECT ?str WHERE { bldg:database bldg:connstring ?str}"""
         )
-        return self.unpack(res)
+        list_ = self.unpack(res, 'str')
+        connstr = list_[0].name
+        start, end = self.model.time_frame[0], self.model.time_frame[1]
+        timestr = f'/timeseries?start_time={start}&end_time={end}'
+        fullstr = connstr + ts_id.name + timestr
+        df = get_timeseries(fullstr)
+
+        return df
+
