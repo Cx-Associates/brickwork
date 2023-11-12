@@ -14,31 +14,27 @@ bldg:database   a   ref:Database ;
 ## timeseries first
 bldg:chiller_supply_water_temp_sensor  a  brick:Temperature_Sensor ;
     brick:hasUnit unit:DEG_F ;
-    ref:hasExternalReference [
-        a ref:TimeseriesReference ;
+    ref:hasExternalReference [ a ref:TimeseriesReference ;
         ref:hasTimeseriesId   "2404:7-240407/analogInput/18" ;
         ref:storedAt  bldg:database ;
     ] .
 
 bldg:chiller_return_water_temp_sensor  a  brick:Temperature_Sensor ;
     brick:hasUnit unit:DEG_F ;
-    ref:hasExternalReference [
-        a ref:TimeseriesReference ;
+    ref:hasExternalReference [ a ref:TimeseriesReference ;
         ref:hasTimeseriesId   "2404:7-240407/analogInput/19" ;
         ref:storedAt  bldg:database ;
     ] .
 
 bldg:chiller_status  a  brick:Status  ;
-    ref:hasExternalReference [
-        a ref:TimeseriesReference ;
+    ref:hasExternalReference [ a ref:TimeseriesReference ;
         ref:hasTimeseriesId   "2404:7-240407/binaryOutput/5" ;
         ref:storedAt  bldg:database ;
     ] .
 
 bldg:chiller_power_meter  a  brick:Power_Sensor  ;
     brick:hasUnit   unit:KiloW ;
-    ref:hasExternalReference [
-        a ref:TimeseriesReference ;
+    ref:hasExternalReference [ a ref:TimeseriesReference ;
         ref:hasTimeseriesId   "2404:7-240407/analogValue/11" ;
         ref:storedAt  bldg:database ;
     ] .

@@ -60,23 +60,16 @@ class Entity(RDF):
         # now get the external timeseries reference of the result of the previous query
         entity = self.unpack(res, 'object')[0] #ToDo: not safe. prepare to deal with multiple results
         res2 = self.g.query(
-            f"""SELECT ?object WHERE {{
-            <%s> ref:hasExternalReference ?object .
+            f"""SELECT ?id WHERE {{
+                ?bnode ref:hasTimeseriesId ?id {{
+                    SELECT ?bnode WHERE {{ <%s> ref:hasExternalReference ?bnode }}
                 }}
+            }}
         """ % entity.uri_ref
         )
-        entity2 = self.unpack(res2, 'object')[0]
-        res3 = self.g.query(
-            # f"""SELECT ?timeseriesId WHERE {{
-            # <%s> ref:hasTimeseriesId ?timeseriesId .
-            # }}
-            """SELECT ?propertyValue WHERE {
-            <%s> ?property ?propertyValue .
-            }
-        """ % entity2.uri_ref
-        )
+        entity2 = self.unpack(res2, 'id')[0]
 
-        return res3
+        return entity2
 
 
 
