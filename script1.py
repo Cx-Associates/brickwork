@@ -8,6 +8,9 @@ from utils import BrickModel
 g = Graph(load_brick=True)
 g.load_file('models/msl.ttl')
 model = BrickModel(g)
+
+# store time_frame as a property of the model. This time frame (start time, end time) will be used for all queries of
+# this graph unless explicitly overridden.
 model.time_frame = ('start', 'end')
 
 # get chiller. I know there's only one chiller so I ask for the first result of the list.

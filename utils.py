@@ -29,7 +29,7 @@ class Entity(RDF):
         try:
             name = str(uri_ref).split('#')[1]
         except IndexError:
-            name = uri_ref
+            name = str(uri_ref)
         self.name = name
         self.g = g
 
@@ -46,7 +46,7 @@ class Entity(RDF):
         )
         return res.bindings
 
-    def get_timeseries(self, relationship, inverse_relationship=None):
+    def get_timeseries_id(self, relationship, inverse_relationship=None):
         """
 
         :return:
@@ -68,8 +68,24 @@ class Entity(RDF):
         """ % entity.uri_ref
         )
         entity2 = self.unpack(res2, 'id')[0]
+        # todo: raise error if no result (to prevent extra API call)
 
         return entity2
+
+    def get_timeseries(self, relationship):
+        """
+
+        :param relationship:
+        :return:
+        """
+        ts_id = self.get_timeseries_id(relationship)
+        connstr = self.g.query(
+            """SELECT ?str WHERE { bldg:database bldg:connstring } ?str"""
+        )
+        fullstr = connstr + ts_id.name
+
+        #Todo: now do full API call.
+
 
 
 
