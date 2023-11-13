@@ -4,12 +4,7 @@ import requests
 import pandas as pd
 
 load_dotenv()
-auth_token = os.getenv('API_KEY')
 
-headers = {
-    'Authorization': f'Bearer {auth_token}',
-    'Content-Type': 'application/json',
-}
 
 def get_timeseries(str_):
     """
@@ -17,12 +12,17 @@ def get_timeseries(str_):
     :param str_:
     :return:
     """
-    res = requests.get(str_, headers=headers)
-    if res.status_code == 200:
-        print('got data')
-        df = parse_response(res)
-    else:
-        raise LookupError
+    with os.getenv('API_KEY') as auth_token:
+        headers = {
+            'Authorization': f'Bearer {auth_token}',
+            'Content-Type': 'application/json',
+        }
+        res = requests.get(str_, headers=headers)
+        if res.status_code == 200:
+            print('got data')
+            df = parse_response(res)
+        else:
+            raise LookupError
 
     return df
 
