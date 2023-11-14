@@ -1,7 +1,9 @@
 """" classes and functions
 
 """
-from api import get_timeseries
+# from api import get_timeseries
+from .api import get_timeseries
+from brickschema import Graph
 
 class RdfParser():
     """
@@ -25,27 +27,38 @@ class BrickModel(RdfParser):
     """
 
     """
-    def __init__(self, _graph=None):
-        self.g = _graph
+    def __init__(self, filepath):
         self.time_frame = (None, None)
+        self.g = Graph(load_brick=True)
+        self.g.load_file(filepath)
 
     def set_time_frame(self, tuple):
         self.time_frame = tuple
 
-    def get_entities(self, brick_class=None):
+    def get_entities(self, name=None, brick_class=None):
         """
 
         :param brick_class:
         :return: a list of instances of the Entity class
         """
-        res = self.g.query(
-            f"""SELECT * WHERE {{
-                ?subject a brick:{brick_class} 
-                     }}"""
-        )
-        list_ = self.unpack(res)
-        for entity in list_:
-            entity.model = self
+        if brick_class is not None:
+            res = self.g.query(
+                f"""SELECT * WHERE {{
+                    ?subject a brick:{brick_class} 
+                         }}"""
+            )
+            list_ = self.unpack(res)
+            for entity in list_:
+                entity.model = self
+        if name is not None:
+            res = self.g.query(
+                f"""SELECT ?subject WHERE {{
+                    ?subject brick:name {name} 
+                         }}"""
+            )
+            list_ = self.unpack(res)
+            for entity in list_:
+                entity.model = self
 
         return list_
 

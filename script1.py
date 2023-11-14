@@ -1,13 +1,11 @@
 """Trying out
 
 """
-from brickschema import Graph
 from utils import BrickModel
 
 # chiller power as a function of chiller on/off, ChW temps, and OAT
-g = Graph(load_brick=True)
-g.load_file('models/msl.ttl')
-model = BrickModel(g)
+ttl_path = 'models/msl.ttl'
+model = BrickModel(ttl_path)
 
 # store time_frame as a property of the model. This time frame (start time, end time) will be used for all queries of
 # this graph unless explicitly overridden.
