@@ -41,24 +41,21 @@ class BrickModel(RdfParser):
         :param brick_class:
         :return: a list of instances of the Entity class
         """
-        if brick_class is not None:
-            res = self.g.query(
-                f"""SELECT * WHERE {{
-                    ?subject a brick:{brick_class} 
-                         }}"""
-            )
-            list_ = self.unpack(res)
-            for entity in list_:
-                entity.model = self
+        predicate = '?p'
+        filter = ''
         if name is not None:
-            res = self.g.query(
-                f"""SELECT ?subject WHERE {{
-                    ?subject brick:name {name} 
-                         }}"""
-            )
-            list_ = self.unpack(res)
-            for entity in list_:
-                entity.model = self
+            filter = f'FILTER(?entity = bldg:{name})' #ToDo:depends on prefix 'bldg'
+        if brick_class is not None:
+            predicate = f'brick:{brick_class}'
+        if name is None and brick_class is None:
+            raise('Need to pass either a brick_class, a name, or both into this function.')
+        str_query = f"""SELECT ?entity ?p WHERE {{
+                    ?entity rdf:type {predicate} . {filter}
+                    }}"""
+        res = self.g.query(str_query)
+        list_ = self.unpack(res)
+        for entity in list_:
+            entity.model = self
 
         return list_
 
