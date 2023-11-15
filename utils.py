@@ -1,8 +1,8 @@
 """" classes and functions
 
 """
-# from api import get_timeseries
-from .api import get_timeseries
+from api import get_timeseries
+# from .api import get_timeseries
 from brickschema import Graph
 
 class RdfParser():
@@ -28,15 +28,11 @@ class BrickModel(RdfParser):
 
     """
     def __init__(self, filepath):
-        self.time_frame = (None, None)
         self.g = Graph(load_brick=True)
         self.g.load_file(filepath)
 
-    def set_time_frame(self, tuple):
-        self.time_frame = tuple
-
     def get_entities(self, name=None, brick_class=None):
-        """
+        """Get a list of entities filtered by name, by class, or by both.
 
         :param brick_class:
         :return: a list of instances of the Entity class
@@ -49,15 +45,35 @@ class BrickModel(RdfParser):
             predicate = f'brick:{brick_class}'
         if name is None and brick_class is None:
             raise('Need to pass either a brick_class, a name, or both into this function.')
-        str_query = f"""SELECT ?entity ?p WHERE {{
+        qry = f"""SELECT ?entity ?p WHERE {{
                     ?entity rdf:type {predicate} . {filter}
                     }}"""
-        res = self.g.query(str_query)
-        list_ = self.unpack(res)
+        res = self.g.query(qry)
+        list_ = self.unpack(res, 'entity') #ToDo: also need 'p' correct? under some conditions?
         for entity in list_:
-            entity.model = self
+            entity.model = self  #ToDo: check if we need this
 
         return list_
+
+    def get_entities_of_system(self, system_name):
+        """
+
+        :param system_name:
+        :return:
+        """
+        qry = f"""SELECT ?obj WHERE {{
+            bldg:{system_name}  brick:hasPart|brick:hasInputSubstance|brick:hasOutputSubstance  ?obj
+        }}"""
+        res = self.g.query(qry)
+        return self.unpack(res, 'obj')
+
+    def get_system_timeseries(self, system_name, time_frame):
+        entities_list = self.get_entities_of_system(system_name)
+        for entity in entities_list:
+            df1 = entity.get_timeseries('hasPoint', time_frame)
+            df2 = entity.get_timeseries('isMeteredBy', time_frame)  #ToDo:graph may use inverse, and reasoning isn't
+            # working
+            # quite yet
 
 class Entity(RdfParser):
     """
@@ -112,7 +128,7 @@ class Entity(RdfParser):
 
         return entity2
 
-    def get_timeseries(self, relationship): #change from relationship to brick:type of object
+    def get_timeseries(self, relationship, time_frame): #change from relationship to brick:type of object
         """
 
         :param relationship:
@@ -124,7 +140,7 @@ class Entity(RdfParser):
         )
         list_ = self.unpack(res, 'str')
         connstr = list_[0].name
-        start, end = self.model.time_frame[0], self.model.time_frame[1]
+        start, end = time_frame[0], time_frame[1]
         timestr = f'/timeseries?start_time={start}&end_time={end}'
         fullstr = connstr + ts_id.name + timestr
         df = get_timeseries(fullstr)
