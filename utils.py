@@ -71,9 +71,10 @@ class BrickModel(RdfParser):
         entities_list = self.get_entities_of_system(system_name)
         for entity in entities_list:
             df1 = entity.get_timeseries('hasPoint', time_frame)
-            df2 = entity.get_timeseries('isMeteredBy', time_frame)  #ToDo:graph may use inverse, and reasoning isn't
+            # df2 = entity.get_timeseries('isMeteredBy', time_frame)  #ToDo:graph may use inverse, and reasoning isn't
             # working
             # quite yet
+            pass
 
 class Entity(RdfParser):
     """
