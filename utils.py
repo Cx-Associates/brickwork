@@ -1,8 +1,8 @@
 """" classes and functions
 
 """
-from api import get_timeseries
-# from .api import get_timeseries
+# from api import get_timeseries
+from .api import get_timeseries
 from brickschema import Graph
 
 class RdfParser():
