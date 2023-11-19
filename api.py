@@ -41,7 +41,7 @@ def parse_response(response):
     df = pd.DataFrame(list_)
     df.index = pd.to_datetime(df.pop('time'))
     df.drop(columns='name', inplace=True)
-    #ToDo: really need to keep parsing to get the number out of this string
+    df['value'] = pd.to_numeric(df['value'])
 
     return df
 

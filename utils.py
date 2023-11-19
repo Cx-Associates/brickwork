@@ -52,6 +52,7 @@ class BrickModel(RdfParser):
         list_ = self.unpack(res, 'entity') #ToDo: also need 'p' correct? under some conditions?
         for entity in list_:
             entity.model = self  #ToDo: check if we need this
+            entity.brick_type = self.get_entity_brick_type(entity.name)
 
         return list_
 
@@ -67,14 +68,36 @@ class BrickModel(RdfParser):
         res = self.g.query(qry)
         return self.unpack(res, 'obj')
 
+    def get_entity_brick_type(self, name):
+        """
+
+        :param uri:
+        :return:
+        """
+        qry = f"""SELECT ?obj WHERE {{
+            bldg:{name}  a  ?obj
+        }}"""
+        res = self.g.query(qry)
+        return self.unpack(res, 'obj')
+
+
+
     def get_system_timeseries(self, system_name, time_frame):
+        """
+
+        :param system_name:
+        :param time_frame:
+        :return:
+        """
         entities_list = self.get_entities_of_system(system_name)
+        series_dict = {}
         for entity in entities_list:
-            df1 = entity.get_timeseries('hasPoint', time_frame)
+            ts_response = entity.get_all_timeseries('hasPoint', time_frame)
             # df2 = entity.get_timeseries('isMeteredBy', time_frame)  #ToDo:graph may use inverse, and reasoning isn't
             # working
             # quite yet
-            pass
+
+
 
 class Entity(RdfParser):
     """
@@ -87,8 +110,9 @@ class Entity(RdfParser):
         except IndexError:
             name = str(uri_ref)
         self.name = name
-        self.g = g
+        self.g = g  #ToDo: need this?
         self.model = None
+        self.brick_type = None
 
     def get_all_relationships(self):
         """
@@ -129,7 +153,7 @@ class Entity(RdfParser):
 
         return entity2
 
-    def get_timeseries(self, relationship, time_frame): #change from relationship to brick:type of object
+    def get_all_timeseries(self, relationship, time_frame): #change from relationship to brick:type of object
         """
 
         :param relationship:
@@ -148,3 +172,8 @@ class Entity(RdfParser):
 
         return df
 
+
+class TimeseriesResponse():
+    """
+
+    """
