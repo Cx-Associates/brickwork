@@ -12,14 +12,24 @@ class RdfParser():
     def __init__(self, graph):
         self.g = graph
 
-    def unpack(self, result, element='subject'):
+    def unpack(self, result, elements=['name', 'brick_class']):
         """
 
         :param result:
         :return:
         """
         list_ = result.bindings
-        list_friendly = [Entity(x.get(element), self.g) for x in list_]
+        list_friendly = [Entity(x.get(elements[0]), self.g) for x in list_]
+        i = 0
+        for x in list_:
+            for element in elements[1:]:
+                uri = x.get(element)
+                try:
+                    str_ = str(uri).split('#')[1]
+                except IndexError:
+                    str_ = str(uri)
+                list_friendly[0].__setattr__(element, str_)
+            i += 1
         return list_friendly
 
 
@@ -37,22 +47,22 @@ class BrickModel(RdfParser):
         :param brick_class:
         :return: a list of instances of the Entity class
         """
-        predicate = '?p'
+        predicate = '?brick_class'
         filter = ''
         if name is not None:
-            filter = f'FILTER(?entity = bldg:{name})' #ToDo:depends on prefix 'bldg'
+            filter = f'FILTER(?name = bldg:{name})' #ToDo:depends on prefix 'bldg'
         if brick_class is not None:
             predicate = f'brick:{brick_class}'
         if name is None and brick_class is None:
             raise('Need to pass either a brick_class, a name, or both into this function.')
-        qry = f"""SELECT ?entity ?p WHERE {{
-                    ?entity rdf:type {predicate} . {filter}
+        qry = f"""SELECT ?name ?brick_class WHERE {{
+                    ?name rdf:type {predicate} . {filter}
                     }}"""
         res = self.g.query(qry)
-        list_ = self.unpack(res, 'entity') #ToDo: also need 'p' correct? under some conditions?
+        list_ = self.unpack(res, ['name', 'brick_class']) #ToDo: also need 'p' correct? under some conditions?
         for entity in list_:
             entity.model = self  #ToDo: check if we need this
-            entity.brick_type = self.get_entity_brick_type(entity.name)
+            # entity.brick_class = self.get_entity_brick_class(entity.name)
 
         return list_
 
@@ -68,7 +78,7 @@ class BrickModel(RdfParser):
         res = self.g.query(qry)
         return self.unpack(res, 'obj')
 
-    def get_entity_brick_type(self, name):
+    def get_entity_brick_class(self, name):
         """
 
         :param uri:
@@ -112,7 +122,7 @@ class Entity(RdfParser):
         self.name = name
         self.g = g  #ToDo: need this?
         self.model = None
-        self.brick_type = None
+        self.brick_class = None
 
     def get_all_relationships(self):
         """
@@ -153,7 +163,7 @@ class Entity(RdfParser):
 
         return entity2
 
-    def get_all_timeseries(self, relationship, time_frame): #change from relationship to brick:type of object
+    def get_all_timeseries(self, time_frame, relationship='hasPoint'):
         """
 
         :param relationship:
