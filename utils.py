@@ -76,7 +76,7 @@ class BrickModel(RdfParser):
             bldg:{system_name}  brick:hasPart|brick:hasInputSubstance|brick:hasOutputSubstance  ?obj
         }}"""
         res = self.g.query(qry)
-        return self.unpack(res, 'obj')
+        return self.unpack(res, ['obj'])
 
     def get_entity_brick_class(self, name):
         """
@@ -88,7 +88,7 @@ class BrickModel(RdfParser):
             bldg:{name}  a  ?obj
         }}"""
         res = self.g.query(qry)
-        return self.unpack(res, 'obj')
+        return self.unpack(res, ['obj'])
 
 
 
@@ -137,11 +137,14 @@ class Entity(RdfParser):
         )
         return res.bindings
 
-    def get_timeseries_id(self, relationship, inverse_relationship=None):
+    def get_timeseries_ids(self, relationship='hasPoint', inverse_relationship=None):
         """
 
+        :param relationship: hasPoint is default because of timeseries storage conventions defined by the BrickSchema
+        documentation
         :return:
         """
+        timeseries_ids = []
         res = self.g.query(
             f"""SELECT ?predicate ?object WHERE {{
                 <%s> brick:{relationship} ?object .
@@ -149,41 +152,67 @@ class Entity(RdfParser):
             """ % self.uri_ref
         )
         # now get the external timeseries reference of the result of the previous query
-        entity = self.unpack(res, 'object')[0] #ToDo: not safe. prepare to deal with multiple results
-        res2 = self.g.query(
-            f"""SELECT ?id WHERE {{
-                ?bnode ref:hasTimeseriesId ?id {{
-                    SELECT ?bnode WHERE {{ <%s> ref:hasExternalReference ?bnode }}
+        points = self.unpack(res, ['object'])
+        for point in points:
+            res2 = self.g.query(
+                f"""SELECT ?id WHERE {{
+                    ?bnode ref:hasTimeseriesId ?id {{
+                        SELECT ?bnode WHERE {{ <%s> ref:hasExternalReference ?bnode }}
+                    }}
                 }}
-            }}
-        """ % entity.uri_ref
-        )
-        entity2 = self.unpack(res2, 'id')[0]
-        # todo: raise error if no result (to prevent extra API call)
+            """ % point.uri_ref
+            )
+            ts_id = self.unpack(res2, ['id'])
+            if len(ts_id) > 1:
+                raise f'!! {self.name} point {point} has more than one associated TimeseriesId. Returning only the ' \
+                      f'first one. If this is not a mistake in the graph, then please refactor this function to deal ' \
+                      f'with multiple TimeseriesIds per one point.'
+            ts_id = ts_id[0]
+            timeseries_ids.append(ts_id)
+        if len(timeseries_ids) == 0:
+            raise Exception(f'No timeseries points found associated with {self.name} in the graph.')
 
-        return entity2
+        return timeseries_ids
 
     def get_all_timeseries(self, time_frame, relationship='hasPoint'):
         """
 
-        :param relationship:
+        :param relationship: hasPoint is default because of timeseries storage conventions defined by the BrickSchema
+        documentation
         :return:
         """
-        ts_id = self.get_timeseries_id(relationship)
-        res = self.g.query(
+        ts_ids = self.get_timeseries_ids(relationship)
+        connstr_res = self.g.query(
             """SELECT ?str WHERE { bldg:database bldg:connstring ?str}"""
         )
-        list_ = self.unpack(res, 'str')
+        list_ = self.unpack(connstr_res, ['str'])
         connstr = list_[0].name
-        start, end = time_frame[0], time_frame[1]
-        timestr = f'/timeseries?start_time={start}&end_time={end}'
-        fullstr = connstr + ts_id.name + timestr
-        df = get_timeseries(fullstr)
+        start, end = time_frame.tuple[0], time_frame.tuple[1]
+        dict_ = {}
+        for id in ts_ids:
+            timestr = f'/timeseries?start_time={start}&end_time={end}'
+            fullstr = connstr + id.name + timestr
+            s = get_timeseries(fullstr)
+            ts = TimeseriesResponse(
+                id=id.name,
+                data=s,
+            )
+            dict_.update({id.name: ts})
 
-        return df
+        return dict_
 
 
 class TimeseriesResponse():
     """
 
     """
+    def __init__(self, **kwargs):
+        """
+
+        """
+        self.id = None
+        self.units = None
+        self.reference = None
+        self.isPointOf = None
+        self.data = None
+        self.__dict__.update(kwargs.copy())
