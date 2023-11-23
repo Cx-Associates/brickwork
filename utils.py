@@ -1,6 +1,8 @@
 """" classes and functions
 
 """
+import pandas as pd
+
 # from api import get_timeseries
 from .api import get_timeseries
 from brickschema import Graph
@@ -123,6 +125,7 @@ class Entity(RdfParser):
         self.g = g  #ToDo: need this?
         self.model = None
         self.brick_class = None
+        self.last_response = {}
 
     def get_all_relationships(self):
         """
@@ -199,7 +202,18 @@ class Entity(RdfParser):
             )
             dict_.update({id.name: ts})
 
+        self.last_response = dict_
         return dict_
+
+    def join_last_response(self):
+        """
+
+        :return:
+        """
+        list_ = [x.data for x in self.last_response.values()]
+        df = pd.concat(list_, axis=1)
+
+        return df
 
 
 class TimeseriesResponse():
