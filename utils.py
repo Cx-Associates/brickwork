@@ -1,6 +1,8 @@
 """" classes and functions
 
 """
+import warnings
+
 import pandas as pd
 
 # from api import get_timeseries
@@ -34,7 +36,6 @@ class RdfParser():
             i += 1
         return list_friendly
 
-
 class BrickModel(RdfParser):
     """
 
@@ -62,9 +63,19 @@ class BrickModel(RdfParser):
                     }}"""
         res = self.g.query(qry)
         list_ = self.unpack(res, ['name', 'brick_class']) #ToDo: also need 'p' correct? under some conditions?
+        if len(list_) == 0:
+            if name is not None and brick_class is None:
+                raise Exception(f'No entities found in graph named {name}. \n Query: {qry}')
+            elif name is None and brick_class is not None:
+                raise Exception(f'No entities in graph of brick class {brick_class}. \n Query: {qry}')
+            elif name is not None and brick_class is not None:
+                raise Exception(f'No entities in graph named {name} of class {brick_class}. \n Query: {qry}')
+            else:
+                raise Exception(f'No entities found with query {qry}.')
         for entity in list_:
             entity.model = self  #ToDo: check if we need this
-            # entity.brick_class = self.get_entity_brick_class(entity.name)
+            if brick_class is not None:
+                entity.brick_class = brick_class
 
         return list_
 
@@ -108,8 +119,6 @@ class BrickModel(RdfParser):
             # df2 = entity.get_timeseries('isMeteredBy', time_frame)  #ToDo:graph may use inverse, and reasoning isn't
             # working
             # quite yet
-
-
 
 class Entity(RdfParser):
     """
@@ -157,20 +166,40 @@ class Entity(RdfParser):
         # now get the external timeseries reference of the result of the previous query
         points = self.unpack(res, ['object'])
         for point in points:
+            # res2 = self.g.query(
+            #     """SELECT ?id ?unit WHERE {
+            #         ?bnode ref:hasTimeseriesId ?id {
+            #             SELECT ?unit WHERE {
+            #                 <%s> ref:hasExternalReference ?bnode .
+            #                 <%s> brick:hasUnit ?unit .
+            #                 }
+            #         }
+            #     }
+            # """ % point.uri_ref
+            # )
             res2 = self.g.query(
-                f"""SELECT ?id WHERE {{
+                f"""SELECT ?s ?id ?unit WHERE {{
                     ?bnode ref:hasTimeseriesId ?id {{
-                        SELECT ?bnode WHERE {{ <%s> ref:hasExternalReference ?bnode }}
+                        SELECT ?unit WHERE {{
+                            bldg:{point.name} ref:hasExternalReference ?bnode .
+                            bldg:{point.name} brick:hasUnit ?unit .
+                            }}
                     }}
                 }}
-            """ % point.uri_ref
+            """
             )
-            ts_id = self.unpack(res2, ['id'])
+            ts_id = self.unpack(res2, ['id', 'unit'])
+            if len(ts_id) == 0:
+                msg = f"!! {self.name} point {point.name} doesn't have TimeseriesId associated with it in the graph."
+                warnings.warn(msg, Warning)
+                continue
             if len(ts_id) > 1:
-                raise f'!! {self.name} point {point} has more than one associated TimeseriesId. Returning only the ' \
-                      f'first one. If this is not a mistake in the graph, then please refactor this function to deal ' \
-                      f'with multiple TimeseriesIds per one point.'
+                msg = f'!! {self.name} point {point.name} has more than one associated TimeseriesId. Returning only ' \
+                      f'the first one. If this is not a mistake in the graph, then please refactor this function to  ' \
+                      f'deal with multiple TimeseriesIds per one point.'
             ts_id = ts_id[0]
+            ts_id.reference = point.name
+            ts_id.isPointOf = self.name
             timeseries_ids.append(ts_id)
         if len(timeseries_ids) == 0:
             raise Exception(f'No timeseries points found associated with {self.name} in the graph.')
@@ -194,13 +223,16 @@ class Entity(RdfParser):
         dict_ = {}
         for id in ts_ids:
             timestr = f'/timeseries?start_time={start}&end_time={end}'
-            fullstr = connstr + id.name + timestr
+            fullstr = connstr + id.name + timestr   #todo: better to use self.URI instead somehow
             s = get_timeseries(fullstr)
             ts = TimeseriesResponse(
                 id=id.name,
+                reference=id.reference,
                 data=s,
+                units=id.unit,
+                isPointOf=id.isPointOf
             )
-            dict_.update({id.name: ts})
+            dict_.update({id.reference: ts})
 
         self.last_response = dict_
         return dict_
@@ -214,7 +246,6 @@ class Entity(RdfParser):
         df = pd.concat(list_, axis=1)
 
         return df
-
 
 class TimeseriesResponse():
     """

@@ -4,5 +4,5 @@
 from brickschema import Graph
 
 g = Graph(load_brick=True)
-g.load_file('models/msl.ttl')
+g.load_file('models/msl_heating-only.ttl')
 g.serve()
