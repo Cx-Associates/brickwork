@@ -1,10 +1,9 @@
 """" classes and functions
 
 """
-import warnings
 
 import pandas as pd
-
+import warnings
 # from api import get_timeseries
 from .api import get_timeseries
 from brickschema import Graph
@@ -77,7 +76,8 @@ class BrickModel(RdfParser):
             if brick_class is not None:
                 entity.brick_class = brick_class
 
-        return list_
+        entity_list = EntityList(list_)
+        return entity_list
 
     def get_entities_of_system(self, system_name):
         """
@@ -166,17 +166,6 @@ class Entity(RdfParser):
         # now get the external timeseries reference of the result of the previous query
         points = self.unpack(res, ['object'])
         for point in points:
-            # res2 = self.g.query(
-            #     """SELECT ?id ?unit WHERE {
-            #         ?bnode ref:hasTimeseriesId ?id {
-            #             SELECT ?unit WHERE {
-            #                 <%s> ref:hasExternalReference ?bnode .
-            #                 <%s> brick:hasUnit ?unit .
-            #                 }
-            #         }
-            #     }
-            # """ % point.uri_ref
-            # )
             res2 = self.g.query(
                 f"""SELECT ?s ?id ?unit WHERE {{
                     ?bnode ref:hasTimeseriesId ?id {{
@@ -261,3 +250,23 @@ class TimeseriesResponse():
         self.isPointOf = None
         self.data = None
         self.__dict__.update(kwargs.copy())
+
+class EntityList():
+    """
+
+    """
+    def __init__(self, list_):
+        self.list = list_
+
+    def join_last_response(self):
+        df = None
+        for entity in self.list:
+            list_ = [x.data for x in entity.last_response.values()]
+            colnames = [f'{entity.name}__{x}' for x in entity.last_response.keys()]
+            df2 = pd.concat(list_, axis=1)
+            df2.columns = colnames
+            if df is not None:
+                df = pd.concat([df, df2], axis=1)
+            else:
+                df = df2
+        return df
