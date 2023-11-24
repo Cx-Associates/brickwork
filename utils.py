@@ -89,7 +89,10 @@ class BrickModel(RdfParser):
             bldg:{system_name}  brick:hasPart|brick:hasInputSubstance|brick:hasOutputSubstance  ?obj
         }}"""
         res = self.g.query(qry)
-        return self.unpack(res, ['obj'])
+        list_ = self.unpack(res, ['obj'])
+        entity_list = EntityList(list_)
+
+        return entity_list
 
     def get_entity_brick_class(self, name):
         """
