@@ -26,10 +26,10 @@ def get_timeseries(str_):
         }
         res = requests.get(str_, headers=headers)
         if res.status_code == 200:
-            print('got data')
+            print(f'Got data! From: \n {str_} \n')
             df = parse_response(res)
         else:
-            raise LookupError
+            raise LookupError('API request was unsuccessful.')
     return df
 
 def parse_response(response):
