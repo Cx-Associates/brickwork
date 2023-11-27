@@ -5,7 +5,7 @@ import pandas as pd
 import yaml
 
 
-env_filename = 'env.yml'
+env_filename = 'api_keys.yml'
 grandparent_dir = os.path.dirname(os.path.dirname(os.getcwd()))
 env_filepath = os.path.join(grandparent_dir, env_filename)
 
