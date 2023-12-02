@@ -259,11 +259,11 @@ class EntityList():
 
     """
     def __init__(self, list_):
-        self.list = list_
+        self.list_ = list_
 
     def join_last_response(self):
         df = None
-        for entity in self.list:
+        for entity in self.list_:
             list_ = [x.data for x in entity.last_response.values()]
             colnames = [f'{entity.name}__{x}' for x in entity.last_response.keys()]
             df2 = pd.concat(list_, axis=1)
