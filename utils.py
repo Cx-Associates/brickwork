@@ -13,7 +13,7 @@ class RdfParser():
 
     """
     def __init__(self, graph):
-        self.g = graph
+        self.graph = graph
 
     def unpack(self, result, elements=['name', 'brick_class']):
         """
@@ -22,7 +22,7 @@ class RdfParser():
         :return:
         """
         list_ = result.bindings
-        list_friendly = [Entity(x.get(elements[0]), self.g) for x in list_]
+        list_friendly = [Entity(x.get(elements[0]), self.graph) for x in list_]
         i = 0
         for x in list_:
             for element in elements[1:]:
@@ -31,7 +31,7 @@ class RdfParser():
                     str_ = str(uri).split('#')[1]
                 except IndexError:
                     str_ = str(uri)
-                list_friendly[0].__setattr__(element, str_)
+                list_friendly[i].__setattr__(element, str_)
             i += 1
         return list_friendly
 
@@ -40,8 +40,8 @@ class BrickModel(RdfParser):
 
     """
     def __init__(self, filepath):
-        self.g = Graph(load_brick=True)
-        self.g.load_file(filepath)
+        self.graph = Graph(load_brick=True)
+        self.graph.load_file(filepath)
 
     def get_entities(self, name=None, brick_class=None):
         """Get a list of entities filtered by name, by class, or by both.
@@ -60,7 +60,7 @@ class BrickModel(RdfParser):
         qry = f"""SELECT ?name ?brick_class WHERE {{
                     ?name rdf:type {predicate} . {filter}
                     }}"""
-        res = self.g.query(qry)
+        res = self.graph.query(qry)
         list_ = self.unpack(res, ['name', 'brick_class']) #ToDo: also need 'p' correct? under some conditions?
         if len(list_) == 0:
             if name is not None and brick_class is None:
@@ -76,7 +76,7 @@ class BrickModel(RdfParser):
             if brick_class is not None:
                 entity.brick_class = brick_class
 
-        entity_list = EntityList(list_)
+        entity_list = EntitySet(list_)
         return entity_list
 
     def get_entities_of_system(self, system_name):
@@ -85,14 +85,15 @@ class BrickModel(RdfParser):
         :param system_name:
         :return:
         """
-        qry = f"""SELECT ?obj WHERE {{
-            bldg:{system_name}  brick:hasPart|brick:hasInputSubstance|brick:hasOutputSubstance  ?obj
+        qry = f"""SELECT ?obj ?brick_class WHERE {{
+            bldg:{system_name}  brick:hasPart|brick:hasInputSubstance|brick:hasOutputSubstance  ?obj.
+            ?obj rdf:type ?brick_class.
         }}"""
-        res = self.g.query(qry)
-        list_ = self.unpack(res, ['obj'])
-        entity_list = EntityList(list_)
+        res = self.graph.query(qry)
+        list_ = self.unpack(res, ['obj', 'brick_class'])
+        entities = EntitySet(list_)
 
-        return entity_list
+        return entities
 
     def get_entity_brick_class(self, name):
         """
@@ -103,7 +104,7 @@ class BrickModel(RdfParser):
         qry = f"""SELECT ?obj WHERE {{
             bldg:{name}  a  ?obj
         }}"""
-        res = self.g.query(qry)
+        res = self.graph.query(qry)
         return self.unpack(res, ['obj'])
 
 
@@ -115,10 +116,13 @@ class BrickModel(RdfParser):
         :param time_frame:
         :return:
         """
-        entities_list = self.get_entities_of_system(system_name)
+        entities = self.get_entities_of_system(system_name)
         series_dict = {}
-        for entity in entities_list:
-            ts_response = entity.get_all_timeseries('hasPoint', time_frame)
+        for entity in entities.list_:
+            entity.get_all_timeseries(time_frame)
+        df = entities.join_last_response()
+
+        return df
             # df2 = entity.get_timeseries('isMeteredBy', time_frame)  #ToDo:graph may use inverse, and reasoning isn't
             # working
             # quite yet
@@ -134,8 +138,7 @@ class Entity(RdfParser):
         except IndexError:
             name = str(uri_ref)
         self.name = name
-        self.g = g  #ToDo: need this?
-        self.model = None
+        self.graph = g  #ToDo: need this?
         self.brick_class = None
         self.last_response = {}
 
@@ -144,7 +147,7 @@ class Entity(RdfParser):
 
         :return:
         """
-        res = self.g.query(
+        res = self.graph.query(
             f"""SELECT ?predicate ?object WHERE {{
                 <%s> ?predicate ?object . 
                      }}
@@ -160,16 +163,17 @@ class Entity(RdfParser):
         :return:
         """
         timeseries_ids = []
-        res = self.g.query(
-            f"""SELECT ?predicate ?object WHERE {{
+        res = self.graph.query(
+            f"""SELECT ?object ?brick_class WHERE {{
                 <%s> brick:{relationship} ?object .
+                ?object  a  ?brick_class
                     }}
             """ % self.uri_ref
         )
         # now get the external timeseries reference of the result of the previous query
-        points = self.unpack(res, ['object'])
+        points = self.unpack(res, ['object', 'brick_class'])
         for point in points:
-            res2 = self.g.query(
+            res2 = self.graph.query(
                 f"""SELECT ?s ?id ?unit WHERE {{
                     ?bnode ref:hasTimeseriesId ?id {{
                         SELECT ?unit WHERE {{
@@ -194,7 +198,8 @@ class Entity(RdfParser):
             ts_id.isPointOf = self.name
             timeseries_ids.append(ts_id)
         if len(timeseries_ids) == 0:
-            raise Exception(f'No timeseries points found associated with {self.name} in the graph.')
+            message = f'No timeseries points found associated with {self.name} in the graph.'
+            raise Exception(message)
 
         return timeseries_ids
 
@@ -206,12 +211,15 @@ class Entity(RdfParser):
         :return:
         """
         ts_ids = self.get_timeseries_ids(relationship)
-        connstr_res = self.g.query(
+        connstr_res = self.graph.query(
             """SELECT ?str WHERE { bldg:database bldg:connstring ?str}"""
         )
         list_ = self.unpack(connstr_res, ['str'])
         connstr = list_[0].name
-        start, end = time_frame.tuple[0], time_frame.tuple[1]
+        try:
+            start, end = time_frame.tuple[0], time_frame.tuple[1]
+        except AttributeError:
+            start, end = time_frame[0], time_frame[1]
         dict_ = {}
         for id in ts_ids:
             timestr = f'/timeseries?start_time={start}&end_time={end}'
@@ -254,7 +262,7 @@ class TimeseriesResponse():
         self.data = None
         self.__dict__.update(kwargs.copy())
 
-class EntityList():
+class EntitySet():
     """
 
     """
