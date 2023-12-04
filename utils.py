@@ -42,6 +42,7 @@ class BrickModel(RdfParser):
     def __init__(self, filepath):
         self.graph = Graph(load_brick=True)
         self.graph.load_file(filepath)
+        self.systems = {}
 
     def get_entities(self, name=None, brick_class=None):
         """Get a list of entities filtered by name, by class, or by both.
@@ -107,8 +108,6 @@ class BrickModel(RdfParser):
         res = self.graph.query(qry)
         return self.unpack(res, ['obj'])
 
-
-
     def get_system_timeseries(self, system_name, time_frame):
         """
 
@@ -117,10 +116,10 @@ class BrickModel(RdfParser):
         :return:
         """
         entities = self.get_entities_of_system(system_name)
-        series_dict = {}
-        for entity in entities.list_:
+        for entity in entities.entities_list:
             entity.get_all_timeseries(time_frame)
         df = entities.join_last_response()
+        self.systems.update({system_name: entities})
 
         return df
             # df2 = entity.get_timeseries('isMeteredBy', time_frame)  #ToDo:graph may use inverse, and reasoning isn't
@@ -196,6 +195,7 @@ class Entity(RdfParser):
             ts_id = ts_id[0]
             ts_id.reference = point.name
             ts_id.isPointOf = self.name
+            ts_id.brick_class = point.brick_class
             timeseries_ids.append(ts_id)
         if len(timeseries_ids) == 0:
             message = f'No timeseries points found associated with {self.name} in the graph.'
@@ -230,7 +230,8 @@ class Entity(RdfParser):
                 reference=id.reference,
                 data=s,
                 units=id.unit,
-                isPointOf=id.isPointOf
+                isPointOf=id.isPointOf,
+                brick_class=id.brick_class
             )
             dict_.update({id.reference: ts})
 
@@ -260,6 +261,7 @@ class TimeseriesResponse():
         self.reference = None
         self.isPointOf = None
         self.data = None
+        self.brick_class = None
         self.__dict__.update(kwargs.copy())
 
 class EntitySet():
@@ -267,11 +269,13 @@ class EntitySet():
 
     """
     def __init__(self, list_):
-        self.list_ = list_
+        self.entities_list = list_
+        self.dataframe = None
+        self.columns_class_mapping = {}
 
     def join_last_response(self):
         df = None
-        for entity in self.list_:
+        for entity in self.entities_list:
             list_ = [x.data for x in entity.last_response.values()]
             colnames = [f'{entity.name}__{x}' for x in entity.last_response.keys()]
             df2 = pd.concat(list_, axis=1)
@@ -280,4 +284,5 @@ class EntitySet():
                 df = pd.concat([df, df2], axis=1)
             else:
                 df = df2
+            self.columns_class_mapping.update({})
         return df
