@@ -9,7 +9,10 @@ env_filename = 'api_keys.yml'
 grandparent_dir = os.path.dirname(os.path.dirname(os.getcwd()))
 env_filepath = os.path.join(grandparent_dir, env_filename)
 
-def get_timeseries(str_):
+def get_timeseries(
+        str_,
+        timezone='US/Eastern'
+):
     """
 
     :param str_:
@@ -28,8 +31,10 @@ def get_timeseries(str_):
         if res.status_code == 200:
             print(f'Got data! From: \n {str_} \n')
             df = parse_response(res)
+            df.index = df.index.tz_localize('UTC').tz_convert(timezone)
         else:
-            raise LookupError('API request was unsuccessful.')
+            msg = f'API request from ACE was unsuccessful. \n {res.reason} \n {res.content}'
+            raise Exception(msg)
     return df
 
 def parse_response(response):
