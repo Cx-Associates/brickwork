@@ -4,6 +4,7 @@ import requests
 import pandas as pd
 import yaml
 
+print("hello")
 
 env_filename = 'api_keys.yml'
 grandparent_dir = os.path.dirname(os.path.dirname(os.getcwd()))
