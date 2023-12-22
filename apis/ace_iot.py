@@ -5,8 +5,10 @@ import pandas as pd
 import yaml
 
 env_filename = 'api_keys.yml'
-grandparent_dir = os.path.dirname(os.path.dirname(os.getcwd()))
-env_filepath = os.path.join(grandparent_dir, env_filename)
+# grandparent_dir = os.path.dirname(os.path.dirname(os.getcwd()))
+# env_filepath = os.path.join(grandparent_dir, env_filename)
+f_drive_path = 'F:/PROJECTS/1715 Main Street Landing EMIS Pilot/API keys'
+env_filepath = os.path.join(f_drive_path, env_filename)
 
 def get_timeseries(
         str_,

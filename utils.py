@@ -5,7 +5,7 @@
 import pandas as pd
 import warnings
 # from api import get_timeseries
-from .api import get_timeseries
+from subrepos.brickwork.apis.ace_iot import get_timeseries
 from brickschema import Graph
 
 class RdfParser():
