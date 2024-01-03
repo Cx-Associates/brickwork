@@ -7,7 +7,7 @@ import yaml
 env_filename = 'api_keys.yml'
 # grandparent_dir = os.path.dirname(os.path.dirname(os.getcwd()))
 # env_filepath = os.path.join(grandparent_dir, env_filename)
-f_drive_path = 'F:/PROJECTS/1715 Main Street Landing EMIS Pilot/API keys'
+f_drive_path = 'F:/PROJECTS/1715 Main Street Landing EMIS Pilot/code/API keys'
 env_filepath = os.path.join(f_drive_path, env_filename)
 
 def get_timeseries(
@@ -30,7 +30,7 @@ def get_timeseries(
         }
         res = requests.get(str_, headers=headers)
         if res.status_code == 200:
-            print(f'Got data! From: \n {str_} \n')
+            print(f'...Got data! From: \n {str_} \n')
             df = parse_response(res)
             df.index = df.index.tz_localize('UTC').tz_convert(timezone)
         else:

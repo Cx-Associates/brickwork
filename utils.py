@@ -131,6 +131,7 @@ class Entity(RdfParser):
 
     """
     def __init__(self, uri_ref, g):
+        self.isPointOf = None
         self.uri_ref = uri_ref
         try:
             name = str(uri_ref).split('#')[1]
@@ -224,6 +225,8 @@ class Entity(RdfParser):
         for id in ts_ids:
             timestr = f'/timeseries?start_time={start}&end_time={end}'
             fullstr = connstr + id.name + timestr   #todo: better to use self.URI instead somehow
+            str_ = f'Attempting to retrieve timeseries data from {id.brick_class} of {id.isPointOf}...'
+            print(str_)
             s = get_timeseries(fullstr)
             ts = TimeseriesResponse(
                 id=id.name,
