@@ -123,7 +123,6 @@ bldg:p3b_status  a  brick:Status ;
     brick:isPointOf  bldg:p3b .
 
 ## remaining mapping
-
 bldg:p2a  a  brick:Pump  ;
       brick:hasInputSubstance bldg:chilled_water ;
       brick:hasOutputSubstance bldg:chilled_water ;
@@ -151,7 +150,43 @@ bldg:chilled_water_system a brick:Chilled_Water_System ;
         bldg:p2a,
         bldg:p2b,
         bldg:p3a,
-        bldg:p3b .
+        bldg:p3b . ##RH:Will need to add the CT here.
+
+#cooling tower
+bldg:fan1_status  a  brick:Status ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId   "2404:2-240402/binaryInput/10" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:fan1 .
+
+bldg:fan2_status  a  brick:Status ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId   "2404:2-240402/binaryInput/11" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:fan2 .
+
+bldg:tfan_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:fan1,
+            bldg:fan2 .
+
+bldg:fan1  a  brick:Cooling_Tower_Fan ;
+    brick:isPartOf bldg: cooling_tower .
+
+bldg:fan2  a  brick:Cooling_Tower_Fan ;
+    brick:isPartOf bldg:cooling_tower .
+
+bldg:cooling_tower  a  brick:Cooling_Tower ;
+    brick:hasPart  bldg:fan1,
+        bldg:fan2 .
 
 
 # heating system
@@ -201,3 +236,82 @@ bldg:heating_system   a  brick:Hot_Water_System  ;
     brick:hasOutputSubstance  bldg:heating_system_supply_water ;
     brick:hasPart  bldg:p4a,
         bldg:p4b .
+
+#HRU
+bldg:ef1_hru_status  a  brick:Status ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId   "2404:10-240410/binaryInput/1" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:ef1_hru .
+
+bldg:sf_hru_status  a  brick:Status ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId   "2404:10-240410/binaryInput/9" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:sf_hru .
+
+bldg:ef1_hru_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:ef1_hru.
+
+bldg:sf_hru_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "2404:10-240410/analogOutput/8" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:sf_hru.
+
+bldg:exhaust_air_hru  a  brick:Exhaust_Air .
+bldg:supply_air_hru  a  brick:Supply_Air .
+bldg:ef1_hru  a  brick:Exhaust_Fan   ;
+    brick:hasInputSubstance  bldg:exhaust_air_hru ;
+    brick:hasOutputSubstance  bldg:exhaust_air_hru .
+
+
+bldg:sf_hru  a  brick:Supply_Fan    ;
+    brick:hasInputSubstance  bldg:supply_air_hru ;
+    brick:hasOutputSubstance  bldg:supply_air_hru .
+
+##AHU-19
+bldg:sf_ahu19_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "2404:3-240403/analogOutput/3" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:sf_ahu19.
+
+bldg:supply_air_ahu19  a  brick:Supply_Air .
+
+bldg:sf_ahu19  a  brick:Supply_Fan    ;
+    brick:hasInputSubstance  bldg:supply_air_ahu19 ;
+    brick:hasOutputSubstance  bldg:supply_air_ahu19 .
+
+bldg:ef1_ahu19_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:ef1_ahu19.
+
+bldg:ef2_ahu19_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:ef2_ahu19.
+
+
+
+
