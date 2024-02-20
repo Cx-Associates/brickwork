@@ -1,0 +1,55 @@
+@prefix bldg: <https://cxa-brick.org/main_street_landing#> .
+@prefix ref: <https://brickschema.org/schema/Brick/ref#> .
+@prefix brick: <https://brickschema.org/schema/Brick#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix unit: <http://qudt.org/vocab/unit/> .
+
+##HRU
+bldg:ef1_hru_status  a  brick:Status ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId   "2404:10-240410/binaryInput/1" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:ef1_hru .
+
+bldg:sf_hru_status  a  brick:Status ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId   "2404:10-240410/binaryInput/9" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:sf_hru .
+
+bldg:ef1_hru_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:ef1_hru.
+
+bldg:sf_hru_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "2404:10-240410/analogOutput/8" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:sf_hru.
+
+bldg:exhaust_air_hru  a  brick:Exhaust_Air .
+bldg:supply_air_hru  a  brick:Supply_Air .
+bldg:ef1_hru  a  brick:Exhaust_Fan   ;
+    brick:hasInputSubstance  bldg:exhaust_air_hru ;
+    brick:hasOutputSubstance  bldg:exhaust_air_hru ;
+    brick:isPartOf bldg:hru.
+
+
+bldg:sf_hru  a  brick:Supply_Fan    ;
+    brick:hasInputSubstance  bldg:supply_air_hru ;
+    brick:hasOutputSubstance  bldg:supply_air_hru ;
+    brick:isPartOf bldg:hru.
+
+bldg:hru  a  brick:Heat_Exchanger  ;
+    brick:hasPart  bldg:ef1_hru,
+        bldg:sf_hru .

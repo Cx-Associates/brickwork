@@ -264,7 +264,7 @@ bldg:heating_system   a  brick:Hot_Water_System  ;
     brick:hasPart  bldg:p4a,
         bldg:p4b .
 
-#HRU
+##HRU
 bldg:ef1_hru_status  a  brick:Status ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
