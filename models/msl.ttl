@@ -394,7 +394,8 @@ bldg:heat_wheel_status  a  brick:Status    ;
     ] ;
     brick:isPointOf  bldg:heat_wheel_ahu19 .
 
-bldg:heat_wheel_ahu19 a brick:Heat_Wheel .
+bldg:heat_wheel_ahu19 a brick:Heat_Wheel ;
+    brick:isPartOf bldg:ahu19.
 
 bldg:ahu19 a brick:AHU ;
     brick:hasInputSubstance bldg:return_air_ahu19 ;
