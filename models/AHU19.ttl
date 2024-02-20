@@ -1,0 +1,96 @@
+@prefix bldg: <https://cxa-brick.org/main_street_landing#> .
+@prefix ref: <https://brickschema.org/schema/Brick/ref#> .
+@prefix brick: <https://brickschema.org/schema/Brick#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix unit: <http://qudt.org/vocab/unit/> .
+
+##AHU-19
+bldg:sf_ahu19_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "2404:3-240403/analogOutput/3" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:sf_ahu19.
+
+bldg:sf_ahu19_static_pressure_setpoint a  brick:Building_Air_Static_Pressure_Setpoint  ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when availble" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:supply_air_ahu19.
+
+bldg:supply_air_ahu19  a  brick:Supply_Air .
+
+bldg:outside_air_ahu19 a brick:Outside_Air .
+
+bldg:sf_ahu19  a  brick:Supply_Fan    ;
+    brick:hasInputSubstance  bldg:outside_air_ahu19 ;
+    brick:hasOutputSubstance  bldg:supply_air_ahu19 ;
+    brick:isPartOf bldg:ahu19.
+
+bldg:ef1_ahu19_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:ef1_ahu19.
+
+bldg:ef2_ahu19_vfd_output  a  brick:Speed_Sensor ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:ef2_ahu19.
+
+bldg:ef_ahu19_total_flow  a  brick:Exhaust_Air  ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "2404:3-240403/analogValue/9" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:exhaust_air_ahu19.
+
+bldg:return_air_ahu19  a  brick:Return_Air .
+
+bldg:exhaust_air_ahu19 a brick:Exhaust_Air .
+
+bldg:ef1_ahu19  a  brick:Exhaust_Fan     ;
+    brick:hasInputSubstance  bldg:return_air_ahu19 ;
+    brick:hasOutputSubstance  bldg:exhaust_air_ahu19 ;
+    brick:isPartOf bldg:ahu19.
+
+bldg:ef2_ahu19  a  brick:Exhaust_Fan     ;
+    brick:hasInputSubstance  bldg:return_air_ahu19 ;
+    brick:hasOutputSubstance  bldg:exhaust_air_ahu19 ;
+    brick:isPartOf bldg:ahu19.
+
+bldg:heat_wheel_vfd  a  brick:Heat_Wheel_VFD   ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when available" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:heat_wheel_ahu19 .
+
+bldg:heat_wheel_status  a  brick:Status    ;
+    ref:hasExternalReference [
+        a ref:TimeseriesReference ;
+        ref:hasTimeseriesId  "##Need to add when available" ;
+        ref:storedAt  bldg:database ;
+    ] ;
+    brick:isPointOf  bldg:heat_wheel_ahu19 .
+
+bldg:heat_wheel_ahu19 a brick:Heat_Wheel ;
+    brick:isPartOf bldg:ahu19.
+
+bldg:ahu19 a brick:AHU ;
+    brick:hasInputSubstance bldg:return_air_ahu19 ;
+    brick:hasOutputSubstance bldg:supply_air_ahu19 ;
+    brick:hasPart bldg:sf_ahu19 ,
+        bldg:ef1_ahu19 ,
+        bldg:ef2_ahu19 ,
+        bldg:heat_wheel_ahu19 .

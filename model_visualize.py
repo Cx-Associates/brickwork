@@ -9,7 +9,7 @@ from IPython.display import display, Image
 from rdflib.tools.rdf2dot import rdf2dot
 
 # specify filepath
-ttl_filepath = "C:/Users/riazul.hoque/repos/EMIS-brick/subrepos/brickwork/models/msl.ttl"
+ttl_filepath = "C:/Users/riazul.hoque/repos/EMIS-brick/subrepos/brickwork/models/AHU19.ttl"
 
 # create RDF graph and load data from ttl
 g = rdflib.Graph()
@@ -27,5 +27,5 @@ def visualize(g):
 dg = visualize(g)
 
 png = dg.create_png()
-with open("MSL Full Model.png", "wb") as f:
+with open("AHU19 Model.png", "wb") as f:
     f.write(png)
