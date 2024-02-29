@@ -172,7 +172,7 @@ bldg:fan2_status  a  brick:Status ;
 bldg:fan1_vfd_output  a  brick:Speed_Sensor ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:hasTimeseriesId  "2404:2-240402/analogOutput/4" ;
         ref:storedAt  bldg:database ;
     ] ;
     brick:isPointOf  bldg:fan1.
@@ -180,7 +180,7 @@ bldg:fan1_vfd_output  a  brick:Speed_Sensor ;
 bldg:fan2_vfd_output  a  brick:Speed_Sensor ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:hasTimeseriesId  "2404:2-240402/analogOutput/4" ;
         ref:storedAt  bldg:database ;
     ] ;
     brick:isPointOf  bldg:fan2 .
@@ -194,7 +194,7 @@ bldg:fan2  a  brick:Cooling_Tower_Fan ;
 bldg:ct_supply_water_temp a brick:Temperature_Sensor  ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:hasTimeseriesId  "2404:2-240402/analogInput/7" ;
         ref:storedAt  bldg:database ;
     ] ;
     brick:isPointOf  bldg:ct_supply_water .
@@ -284,7 +284,7 @@ bldg:sf_hru_status  a  brick:Status ;
 bldg:ef1_hru_vfd_output  a  brick:Speed_Sensor ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:hasTimeseriesId  "2404:10-240410/analogOutput/2" ;
         ref:storedAt  bldg:database ;
     ] ;
     brick:isPointOf  bldg:ef1_hru.
@@ -323,10 +323,10 @@ bldg:sf_ahu19_vfd_output  a  brick:Speed_Sensor ;
     ] ;
     brick:isPointOf  bldg:sf_ahu19.
 
-bldg:sf_ahu19_static_pressure_setpoint a  brick:Building_Air_Static_Pressure_Setpoint  ;
+bldg:sf_ahu19_supply_air_sp a  brick:Pressure_Sensor   ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId  "##Need to add when availble" ;
+        ref:hasTimeseriesId  "2404:3-240403/analogInput/5" ;
         ref:storedAt  bldg:database ;
     ] ;
     brick:isPointOf  bldg:supply_air_ahu19.
@@ -343,7 +343,7 @@ bldg:sf_ahu19  a  brick:Supply_Fan    ;
 bldg:ef1_ahu19_vfd_output  a  brick:Speed_Sensor ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:hasTimeseriesId  "2404:3-240403/analogOutput/5" ;
         ref:storedAt  bldg:database ;
     ] ;
     brick:isPointOf  bldg:ef1_ahu19.
@@ -351,7 +351,7 @@ bldg:ef1_ahu19_vfd_output  a  brick:Speed_Sensor ;
 bldg:ef2_ahu19_vfd_output  a  brick:Speed_Sensor ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId  "##Need to add when avilable" ;
+        ref:hasTimeseriesId  "2404:3-240403/analogOutput/6" ;
         ref:storedAt  bldg:database ;
     ] ;
     brick:isPointOf  bldg:ef2_ahu19.
@@ -381,7 +381,7 @@ bldg:ef2_ahu19  a  brick:Exhaust_Fan     ;
 bldg:heat_wheel_vfd  a  brick:Heat_Wheel_VFD   ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId  "##Need to add when available" ;
+        ref:hasTimeseriesId  "2404:3-240403/analogOutput/2" ;
         ref:storedAt  bldg:database ;
     ] ;
     brick:isPointOf  bldg:heat_wheel_ahu19 .
@@ -389,7 +389,7 @@ bldg:heat_wheel_vfd  a  brick:Heat_Wheel_VFD   ;
 bldg:heat_wheel_status  a  brick:Status    ;
     ref:hasExternalReference [
         a ref:TimeseriesReference ;
-        ref:hasTimeseriesId  "##Need to add when available" ;
+        ref:hasTimeseriesId  "2404:3-240403/binaryInput/6" ;
         ref:storedAt  bldg:database ;
     ] ;
     brick:isPointOf  bldg:heat_wheel_ahu19 .
